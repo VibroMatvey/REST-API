@@ -1,0 +1,35 @@
+{
+  "name": "rest-api",
+  "version": "1.0.0",
+  "description": "REST API",
+  "type": "module",
+  "main": "App.js",
+  "scripts": {
+    "start": "node App.js",
+    "dev": "nodemon App.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VibroMatvey/REST-API.git"
+  },
+  "keywords": [
+    "js",
+    "api",
+    "rest"
+  ],
+  "author": "vibromatvey",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/VibroMatvey/REST-API/issues"
+  },
+  "homepage": "https://github.com/VibroMatvey/REST-API#readme",
+  "dependencies": {
+    "express": "^4.18.1",
+    "express-validator": "^6.14.2",
+    "mysql2": "^2.3.3",
+    "sequelize": "^6.21.6"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  }
+}
