@@ -1,6 +1,6 @@
 import {Sequelize, DataTypes} from "sequelize";
 
-const sequelize = new Sequelize('API', 'root', '', {
+const sequelize = new Sequelize('api_i-land', 'root', '', {
     dialect: 'mysql',
     host: 'localhost',
     define: {
