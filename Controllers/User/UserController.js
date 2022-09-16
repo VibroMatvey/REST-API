@@ -4,7 +4,6 @@ import { randomKeyGenerator } from "../../index.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 import TOKEN_KEY from "../../config.js";
-import cookies from 'cookie-parser'
 
 class UsersController {
 
@@ -58,12 +57,6 @@ class UsersController {
                     expiresIn: "7d",
                 }
             )
-
-            await Users.update({ key: key }, {
-                where: {
-                    id: user.id
-                }
-            });
             res.cookie('k', key )
             res.status(201).json(user);
         } catch (err) {
@@ -96,6 +89,31 @@ class UsersController {
             }
         } else {
             res.status(401).json({ error: "Такого пользователя не существует" });
+        }
+    }
+
+    async updateUser (req, res) {
+        try {
+            console.log(req.user.user_id)
+            const id = req.user.user_id
+            const {name, surName, lastName, gender, city, age, social, avatar} = req.body
+            Users.update({
+                name: name,
+                surName: surName,
+                lastName: lastName,
+                gender: gender,
+                city: city,
+                age: age,
+                social: social,
+                avatar: avatar
+            }, {
+                where: {
+                    id: id
+                }
+            })
+            res.status(200).json({ message: `${name}, Регистрация прошла успешно!` });
+        }catch(e) {
+            res.json(e)
         }
     }
 }

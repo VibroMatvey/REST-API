@@ -48,7 +48,7 @@ const Users = sequelize.define('User', {
     },
 
     gender: {
-        type: DataTypes.ENUM( 'f', 'm'),
+        type: DataTypes.ENUM('f', 'm'),
         allowNull: true,
     },
 
@@ -80,6 +80,46 @@ const Users = sequelize.define('User', {
     }
 })
 
+const Events = sequelize.define('events', {
+    id: {
+        type: DataTypes.BIGINT,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false
+    },
+    title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    start: {
+        type: DataTypes.DATE,
+        allowNull: false,
+    },
+    eventStatusId: {
+        type:DataTypes.INTEGER,
+        allowNull:false,
+        defaultValue:1
+    }
+})
+
+const eventStatuses = sequelize.define('eventStatuses', {
+    id: {
+        type: DataTypes.BIGINT,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false
+    },
+    title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+})
+
+eventStatuses.hasMany(Events, {
+    foreignKey: 'eventStatusId',
+});
+Events.belongsTo(eventStatuses);
+
 sequelize
     .sync()
     .then((data) => {
@@ -89,4 +129,4 @@ sequelize
         console.log(err);
     });
 
-export { Users }
+export {Users, Events}
