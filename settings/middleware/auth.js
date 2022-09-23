@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import TOKEN_KEY from "../config.js";
+import TOKEN_KEY from "../../config.js";
 
 const verifyToken = (req, res, next) => {
     let token = '';

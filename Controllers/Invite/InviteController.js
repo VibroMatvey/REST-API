@@ -133,6 +133,9 @@ class InviteController {
                                     userId: userId,
                                     capitanId: capitanRequest.capitanId,
                                     eventId: event.id,
+                                    inviteStatusId: {
+                                        [Op.ne]: 1
+                                    }
                                 }
                             })
                             if (invite) {

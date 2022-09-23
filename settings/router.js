@@ -4,7 +4,7 @@ import EventController from "../Controllers/Event/EventController.js";
 import RequestController from "../Controllers/Request/RequestController.js";
 import {Users, Events} from "./db.js";
 import {check} from "express-validator";
-import verifyToken from '../middleware/auth.js'
+import verifyToken from './middleware/auth.js'
 import InviteController from "../Controllers/Invite/InviteController.js";
 
 const router = new Router();
