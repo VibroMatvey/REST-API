@@ -48,7 +48,50 @@ class RequestController {
                 res.status(400).json({error: 'Активного мероприятия нет, либо подача заявок завершена.'})
             }
         } catch (error) {
-            res.status(500).json( {error: 'Ошибка сервера'} )
+            res.status(500).json({error: 'Ошибка сервера'})
+        }
+    }
+
+    async sendRequest(req, res) {
+        try {
+            const requestId = req.body.requestId
+            const event = await Events.findOne({
+                where: {
+                    eventStatusId: 1
+                }
+            })
+            if (event) {
+                const confirmInvites = await Invites.findAll({
+                    where: {
+                        requestId: requestId,
+                        eventId: event.id,
+                        inviteStatusId: 2
+                    }
+                })
+                const allInvites = await Invites.findAll({
+                    where: {
+                        requestId: requestId,
+                        eventId: event.id,
+                    }
+                })
+                if (confirmInvites.length === allInvites.length) {
+                    await Requests.update({
+                            requestStatusId: 2
+                        },
+                        {
+                            where: {
+                                id: requestId
+                            }
+                        })
+                    res.status(200).json({error: 'Заявка успешно отправлена на модерацию.'})
+                } else {
+                    res.status(400).json({error: 'Не все приняли приглашение.'})
+                }
+            } else {
+                res.status(400).json({error: 'Активного мероприятия нет, либо подача заявок завершена.'})
+            }
+        } catch (e) {
+            res.status(500).json({error: 'Ошибка сервера'})
         }
     }
 }

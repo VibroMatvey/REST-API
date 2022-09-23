@@ -2,21 +2,47 @@ import {Router} from 'express'
 import UsersController from '../Controllers/User/UserController.js'
 import EventController from "../Controllers/Event/EventController.js";
 import RequestController from "../Controllers/Request/RequestController.js";
-import {Users, Events} from "./db.js";
+import {Users, Requests, requestsStatuses, Events} from "./db.js";
 import {check} from "express-validator";
 import verifyToken from './middleware/auth.js'
 import InviteController from "../Controllers/Invite/InviteController.js";
 
 const router = new Router();
 
-router.get('/cabinet', verifyToken, (req, res) => {
-    const info = req.user.user_id
-    Users.findOne({where: {id: info}}).then(data => {
-        if (data == null) {
-            return res.status(500).json({Message: 'Такого пользователя не существует'})
-        }
-        res.json(data)
+router.get('/cabinet', verifyToken, async (req, res) => {
+    const id = req.user.user_id
+    const user = await Users.findOne({
+        where: {id: id}
     })
+    if (user) {
+        if (user.roleId === 2) {
+            const requests = await Requests.findAll({
+                include: [
+                    {model: Users, required: true},
+                    {model: requestsStatuses, required: true},
+                    {model: Events, required: true}
+                ]
+            })
+            const data = []
+            requests.forEach(request => {
+                data.push({
+                    id: request.id,
+                    dance: request.dance,
+                    User: {
+                        email: request.User.email,
+                        login: request.User.login
+                    },
+                    quantity: request.quantity,
+                    Event: request.Event.title,
+                    requestsStatus: request.requestsStatus.title
+                })
+            })
+            console.log(data)
+            res.json(data)
+        } else {
+            res.json(user)
+        }
+    }
 })
 
 router.post('/user/register',
@@ -99,6 +125,13 @@ router.post('/request/create',
         .notEmpty()
         .withMessage('Поле "dance" обязательное для заполнения'),
     RequestController.createRequest
+)
+router.post('/request/send',
+    verifyToken,
+    check('requestId')
+        .notEmpty()
+        .withMessage('"requestId" обязательное для заполнения'),
+    RequestController.sendRequest
 )
 
 
