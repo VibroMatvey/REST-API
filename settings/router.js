@@ -71,12 +71,25 @@ router.post('/user/update', verifyToken,
 router.post('/event/create',
     check('title')
         .notEmpty()
-        .withMessage('Поле обязательное для заполнения'),
+        .withMessage('Поле "title" обязательное для заполнения'),
     check('start')
         .notEmpty()
-        .withMessage('Поле обязательное для заполнения'),
+        .withMessage('Поле "start" обязательное для заполнения'),
     EventController.createEvent
     )
+
+router.post('/event/start',
+    check('id')
+        .notEmpty()
+        .withMessage('Поле "id" обязательное для заполнения'),
+    EventController.EventStart
+    )
+router.post('/event/next',
+    check('id')
+        .notEmpty()
+        .withMessage('Поле "id" обязательное для заполнения'),
+    EventController.EventNext
+)
 
 router.get('/users', UsersController.getAllUsers);
 

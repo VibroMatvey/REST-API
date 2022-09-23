@@ -1,6 +1,6 @@
 import {Sequelize, DataTypes} from "sequelize";
 
-const sequelize = new Sequelize('api_i-land', 'root', '', {
+const sequelize = new Sequelize('api', 'root', '', {
     dialect: 'mysql',
     host: 'localhost',
     define: {
@@ -8,7 +8,7 @@ const sequelize = new Sequelize('api_i-land', 'root', '', {
     },
 })
 
-const Users = sequelize.define('User', {
+const Users = sequelize.define('Users', {
     id: {
         type: DataTypes.BIGINT,
         primaryKey: true,
@@ -77,10 +77,29 @@ const Users = sequelize.define('User', {
     token: {
         type: DataTypes.STRING,
         allowNull: false,
+    },
+
+    roleId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1
     }
 })
 
-const Events = sequelize.define('events', {
+const Roles = sequelize.define('Roles', {
+    id: {
+        type: DataTypes.BIGINT,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false
+    },
+    title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+})
+
+const Events = sequelize.define('Events', {
     id: {
         type: DataTypes.BIGINT,
         primaryKey: true,
@@ -96,11 +115,12 @@ const Events = sequelize.define('events', {
         allowNull: false,
     },
     eventStatusId: {
-        type:DataTypes.INTEGER,
-        allowNull:false,
-        defaultValue:1
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1
     }
 })
+
 
 const eventStatuses = sequelize.define('eventStatuses', {
     id: {
@@ -115,10 +135,19 @@ const eventStatuses = sequelize.define('eventStatuses', {
     },
 })
 
+Roles.hasMany(Users, {
+    foreignKey: 'roleId',
+});
+Users.belongsTo(Roles, {
+    foreignKey: 'roleId',
+});
+
 eventStatuses.hasMany(Events, {
     foreignKey: 'eventStatusId',
 });
-Events.belongsTo(eventStatuses);
+Events.belongsTo(eventStatuses, {
+    foreignKey: 'eventStatusId',
+});
 
 sequelize
     .sync()
@@ -129,4 +158,4 @@ sequelize
         console.log(err);
     });
 
-export {Users, Events}
+export {Users, Events, eventStatuses, Roles}

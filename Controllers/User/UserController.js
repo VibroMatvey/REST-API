@@ -94,7 +94,6 @@ class UsersController {
 
     async updateUser (req, res) {
         try {
-            console.log(req.user.user_id)
             const id = req.user.user_id
             const {name, surName, lastName, gender, city, age, social, avatar} = req.body
             Users.update({
