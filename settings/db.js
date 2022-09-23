@@ -135,6 +135,93 @@ const eventStatuses = sequelize.define('eventStatuses', {
     },
 })
 
+const Requests = sequelize.define('Requests', {
+    id: {
+        type: DataTypes.BIGINT,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false
+    },
+    capitanId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    dance: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    quantity: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
+        defaultValue: 1
+    },
+    requestStatusId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1
+    },
+    eventId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+})
+
+const requestsStatuses = sequelize.define('requestsStatuses', {
+    id: {
+        type: DataTypes.BIGINT,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false
+    },
+    title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+})
+
+const Invites = sequelize.define('invites', {
+    id: {
+        type: DataTypes.BIGINT,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false
+    },
+    capitanId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    eventId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    requestId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    inviteStatusId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1
+    }
+})
+
+const invitesStatuses = sequelize.define('invitesStatuses', {
+    id: {
+        type: DataTypes.BIGINT,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false
+    },
+    title: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
+})
+
 Roles.hasMany(Users, {
     foreignKey: 'roleId',
 });
@@ -149,6 +236,57 @@ Events.belongsTo(eventStatuses, {
     foreignKey: 'eventStatusId',
 });
 
+requestsStatuses.hasMany(Requests, {
+    foreignKey: 'requestStatusId'
+})
+Requests.belongsTo(requestsStatuses, {
+    foreignKey: 'requestStatusId'
+})
+
+Users.hasMany(Requests, {
+    foreignKey: 'capitanId'
+})
+Requests.belongsTo(Users, {
+    foreignKey: 'capitanId'
+})
+Events.hasMany(Requests, {
+    foreignKey: 'eventId'
+})
+Requests.belongsTo(Events, {
+    foreignKey: 'eventId',
+});
+
+invitesStatuses.hasMany(Invites, {
+    foreignKey: 'inviteStatusId'
+})
+Invites.belongsTo(invitesStatuses, {
+    foreignKey: 'inviteStatusId'
+})
+Events.hasMany(Invites, {
+    foreignKey: 'eventId'
+})
+Invites.belongsTo(Events, {
+    foreignKey: 'eventId',
+});
+Users.hasMany(Invites, {
+    foreignKey: 'userId'
+})
+Invites.belongsTo(Users, {
+    foreignKey: 'userId'
+})
+Requests.hasMany(Invites, {
+    foreignKey: 'requestId'
+})
+Invites.belongsTo(Requests, {
+    foreignKey: 'requestId'
+})
+Users.hasMany(Invites, {
+    foreignKey: 'capitanId'
+})
+Invites.belongsTo(Users, {
+    foreignKey: 'capitanId'
+})
+
 sequelize
     .sync()
     .then((data) => {
@@ -158,4 +296,4 @@ sequelize
         console.log(err);
     });
 
-export {Users, Events, eventStatuses, Roles}
+export {Users, Events, eventStatuses, Roles, Requests, requestsStatuses, Invites, invitesStatuses}

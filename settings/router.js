@@ -1,15 +1,17 @@
 import {Router} from 'express'
 import UsersController from '../Controllers/User/UserController.js'
 import EventController from "../Controllers/Event/EventController.js";
+import RequestController from "../Controllers/Request/RequestController.js";
 import {Users, Events} from "./db.js";
 import {check} from "express-validator";
 import verifyToken from '../middleware/auth.js'
+import InviteController from "../Controllers/Invite/InviteController.js";
 
 const router = new Router();
 
 router.get('/cabinet', verifyToken, (req, res) => {
     const info = req.user.user_id
-    Users.findOne({ where: { id:info } }).then(data=> {
+    Users.findOne({where: {id: info}}).then(data => {
         if (data == null) {
             return res.status(500).json({Message: 'Такого пользователя не существует'})
         }
@@ -66,7 +68,7 @@ router.post('/user/update', verifyToken,
         .notEmpty()
         .withMessage('Поле обязательное для заполнения'),
     UsersController.updateUser
-    )
+)
 
 router.post('/event/create',
     check('title')
@@ -76,19 +78,43 @@ router.post('/event/create',
         .notEmpty()
         .withMessage('Поле "start" обязательное для заполнения'),
     EventController.createEvent
-    )
+)
 
 router.post('/event/start',
     check('id')
         .notEmpty()
         .withMessage('Поле "id" обязательное для заполнения'),
     EventController.EventStart
-    )
+)
 router.post('/event/next',
     check('id')
         .notEmpty()
         .withMessage('Поле "id" обязательное для заполнения'),
     EventController.EventNext
+)
+
+router.post('/request/create',
+    verifyToken,
+    check('dance')
+        .notEmpty()
+        .withMessage('Поле "dance" обязательное для заполнения'),
+    RequestController.createRequest
+)
+
+
+router.post('/invite/create',
+    verifyToken,
+    check('userId')
+        .notEmpty()
+        .withMessage('"userId" обязательное для заполнения'),
+    InviteController.createInvite
+)
+router.post('/invite/confirm',
+    verifyToken,
+    check('requestId')
+        .notEmpty()
+        .withMessage('"requestId" обязательное для заполнения'),
+    InviteController.inviteConfirm
 )
 
 router.get('/users', UsersController.getAllUsers);
