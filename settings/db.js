@@ -77,6 +77,7 @@ const Users = sequelize.define('Users', {
     token: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true
     },
 
     roleId: {

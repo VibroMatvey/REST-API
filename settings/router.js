@@ -2,48 +2,22 @@ import {Router} from 'express'
 import UsersController from '../Controllers/User/UserController.js'
 import EventController from "../Controllers/Event/EventController.js";
 import RequestController from "../Controllers/Request/RequestController.js";
-import {Users, Requests, requestsStatuses, Events} from "./db.js";
 import {check} from "express-validator";
-import verifyToken from './middleware/auth.js'
+import verifyToken from './middleware/Auth.js'
+import HasAdmin from "./middleware/HasAdmin.js";
 import InviteController from "../Controllers/Invite/InviteController.js";
 
 const router = new Router();
 
-router.get('/cabinet', verifyToken, async (req, res) => {
-    const id = req.user.user_id
-    const user = await Users.findOne({
-        where: {id: id}
-    })
-    if (user) {
-        if (user.roleId === 2) {
-            const requests = await Requests.findAll({
-                include: [
-                    {model: Users, required: true},
-                    {model: requestsStatuses, required: true},
-                    {model: Events, required: true}
-                ]
-            })
-            const data = []
-            requests.forEach(request => {
-                data.push({
-                    id: request.id,
-                    dance: request.dance,
-                    User: {
-                        email: request.User.email,
-                        login: request.User.login
-                    },
-                    quantity: request.quantity,
-                    Event: request.Event.title,
-                    requestsStatus: request.requestsStatus.title
-                })
-            })
-            console.log(data)
-            res.json(data)
-        } else {
-            res.json(user)
-        }
-    }
-})
+router.get('/cabinet',
+    verifyToken,
+    UsersController.getUser
+)
+
+router.get('/admin/users',
+    HasAdmin,
+    UsersController.getAllUsers
+)
 
 router.post('/user/register',
     check('email', 'Не верная почта')
@@ -56,7 +30,19 @@ router.post('/user/register',
     check('password', 'Не верный пароль')
         .notEmpty()
         .withMessage('Поле обязательное для заполнения'),
-    UsersController.createUser)
+    UsersController.createUser
+)
+
+router.post('/admin/register',
+    HasAdmin,
+    check('login')
+        .notEmpty()
+        .withMessage('Поле обязательное для заполнения'),
+    check('password')
+        .notEmpty()
+        .withMessage('Поле обязательное для заполнения'),
+    UsersController.createAdmin
+)
 
 router.post('/user/login',
     check('email', 'Не верная почта')
@@ -66,9 +52,22 @@ router.post('/user/login',
     check('password')
         .notEmpty()
         .withMessage('Поле обязательное для заполнения'),
-    UsersController.loginUser)
+    UsersController.loginUser
+)
 
-router.post('/user/update', verifyToken,
+router.post('/admin/login',
+    check('login')
+        .isEmail()
+        .notEmpty()
+        .withMessage('Поле обязательное для заполнения'),
+    check('password')
+        .notEmpty()
+        .withMessage('Поле обязательное для заполнения'),
+    UsersController.loginAdmin
+)
+
+router.post('/user/update',
+    verifyToken,
     check('name')
         .notEmpty()
         .withMessage('Поле обязательное для заполнения'),
@@ -96,7 +95,8 @@ router.post('/user/update', verifyToken,
     UsersController.updateUser
 )
 
-router.post('/event/create',
+router.post('/admin/event/create',
+    HasAdmin,
     check('title')
         .notEmpty()
         .withMessage('Поле "title" обязательное для заполнения'),
@@ -106,13 +106,15 @@ router.post('/event/create',
     EventController.createEvent
 )
 
-router.post('/event/start',
+router.post('/admin/event/start',
+    HasAdmin,
     check('id')
         .notEmpty()
         .withMessage('Поле "id" обязательное для заполнения'),
     EventController.EventStart
 )
-router.post('/event/next',
+router.post('/admin/event/next',
+    HasAdmin,
     check('id')
         .notEmpty()
         .withMessage('Поле "id" обязательное для заполнения'),
@@ -149,7 +151,5 @@ router.post('/invite/confirm',
         .withMessage('"requestId" обязательное для заполнения'),
     InviteController.inviteConfirm
 )
-
-router.get('/users', UsersController.getAllUsers);
 
 export default router;
