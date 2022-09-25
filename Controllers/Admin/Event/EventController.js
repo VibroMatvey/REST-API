@@ -1,4 +1,4 @@
-import {Events} from "../../settings/db.js";
+import {Events} from "../../../settings/db.js";
 import {Op} from 'sequelize';
 
 class EventController {

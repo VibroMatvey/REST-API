@@ -81,7 +81,7 @@ class InviteController {
         }
     }
 
-    async inviteConfirm (req, res) {
+    async inviteConfirm(req, res) {
         try {
             const event = await Events.findOne({
                 where: {
@@ -91,7 +91,7 @@ class InviteController {
             if (event) {
                 const userId = req.user.user_id
                 const requestId = req.body.requestId
-                const invites = Invites.findAll({
+                const invites = await Invites.findAll({
                     where: {
                         userId: userId,
                         eventId: event.id,
@@ -111,7 +111,6 @@ class InviteController {
                         }
                     })
                     if (userRequest) {
-                        console.log(userRequest)
                         if (userRequest.requestStatusId === 1) {
                             res.status(400).json({error: 'Приглашение не было принято, т.к. у Вас есть собственная, неотправленная заявка. Удалите ее для продолжения'})
                         }
@@ -171,6 +170,104 @@ class InviteController {
             }
         } catch (e) {
             res.status(400).json({error: 'Приглашение не было отправлено, т.к. активного мероприятия нет, либо подача заявок завершена.'})
+        }
+    }
+
+    async inviteReject(req, res) {
+        try {
+            const userId = req.user.user_id
+            const requestId = req.body.requestId
+            const event = await Events.findOne({
+                where: {
+                    eventStatusId: 1
+                }
+            })
+            if (event) {
+                await Invites.update({
+                    inviteStatusId: 3
+                }, {
+                    where: {
+                        userId: userId,
+                        requestId: requestId,
+                        eventId: event.id
+                    }
+                })
+                res.status(200).json({success: 'Приглашение успешно отклонено!'})
+            } else {
+                res.status(400).json({error: 'Приглашение не было отклонено, т.к. активного мероприятия нет, либо подача заявок завершена'})
+            }
+        } catch (e) {
+            res.status(500).json({error: 'Ошибка сервера'})
+        }
+    }
+
+    async inviteDelete(req, res) {
+        try {
+            const capitanId = req.user.user_id
+            const userId = req.body.userId
+            const event = await Events.findOne({
+                where: {
+                    eventStatusId: 1
+                }
+            })
+            if (event) {
+                const request = await Requests.findOne({
+                    where: {
+                        capitanId: capitanId,
+                        eventId: event.id,
+                        requestStatusId: {
+                            [Op.ne]: 3
+                        }
+                    }
+                })
+                if (request) {
+                    const invite = await Invites.findOne({
+                        where: {
+                            capitanId: capitanId,
+                            userId: userId,
+                            eventId: event.id,
+                            inviteStatusId: {
+                                [Op.ne]: 1
+                            }
+                        }
+                    })
+                    if (invite) {
+                        await Invites.destroy({
+                            where: {
+                                id: invite.id
+                            }
+                        })
+                        if (request.requestStatusId === 1) {
+                            if (invite.inviteStatusId === 2) {
+                                await Requests.update({
+                                    quantity: request.quantity - 1
+                                }, {
+                                    where: {
+                                        id: request.id
+                                    }
+                                })
+                            }
+                        } else {
+                            await Requests.update({
+                                quantity: request.quantity - 1
+                            }, {
+                                where: {
+                                    id: request.id
+                                }
+                            })
+                        }
+                        res.status(200).json({success: 'Приглашение успешно удалено!'})
+                    } else {
+                        res.status(400).json({error: 'Приглашение не было удалено, т.к. подходящее приглашение не было найдено'})
+                    }
+                } else {
+                    res.status(400).json({error: 'Приглашение не было удалено, т.к. подходящая заявка не была найдена'})
+                }
+            } else {
+                res.status(400).json({error: 'Приглашение не было отклонено, т.к. активного мероприятия нет, либо подача заявок завершена'})
+            }
+        } catch (e) {
+            res.status(500).json({error: 'Ошибка сервера'})
         }
     }
 }

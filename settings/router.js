@@ -1,6 +1,6 @@
 import {Router} from 'express'
 import UsersController from '../Controllers/User/UserController.js'
-import EventController from "../Controllers/Event/EventController.js";
+import EventController from "../Controllers/Admin/Event/EventController.js";
 import RequestController from "../Controllers/Request/RequestController.js";
 import {check} from "express-validator";
 import verifyToken from './middleware/Auth.js'
@@ -135,6 +135,20 @@ router.post('/request/send',
         .withMessage('"requestId" обязательное для заполнения'),
     RequestController.sendRequest
 )
+router.post('/request/member/out',
+    verifyToken,
+    check('requestId')
+        .notEmpty()
+        .withMessage('"requestId" обязательное для заполнения'),
+    RequestController.outUserRequest
+)
+router.post('/request/capitan/out',
+    verifyToken,
+    check('requestId')
+        .notEmpty()
+        .withMessage('"requestId" обязательное для заполнения'),
+    RequestController.outCapitanRequest
+)
 
 
 router.post('/invite/create',
@@ -150,6 +164,20 @@ router.post('/invite/confirm',
         .notEmpty()
         .withMessage('"requestId" обязательное для заполнения'),
     InviteController.inviteConfirm
+)
+router.post('/invite/reject',
+    verifyToken,
+    check('requestId')
+        .notEmpty()
+        .withMessage('"requestId" обязательное для заполнения'),
+    InviteController.inviteReject
+)
+router.post('/invite/delete',
+    verifyToken,
+    check('userId')
+        .notEmpty()
+        .withMessage('"userId" обязательное для заполнения'),
+    InviteController.inviteDelete
 )
 
 export default router;

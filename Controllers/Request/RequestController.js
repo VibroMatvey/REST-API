@@ -80,7 +80,8 @@ class RequestController {
                         },
                         {
                             where: {
-                                id: requestId
+                                id: requestId,
+                                eventId: event.id,
                             }
                         })
                     res.status(200).json({error: 'Заявка успешно отправлена на модерацию.'})
@@ -89,6 +90,99 @@ class RequestController {
                 }
             } else {
                 res.status(400).json({error: 'Активного мероприятия нет, либо подача заявок завершена.'})
+            }
+        } catch (e) {
+            res.status(500).json({error: 'Ошибка сервера'})
+        }
+    }
+
+    async outUserRequest(req, res) {
+        try {
+            const userId = req.user.user_id
+            const requestId = req.body.requestId
+            const event = await Events.findOne({
+                where: {
+                    eventStatusId: 1
+                }
+            })
+            if (event) {
+                const request = await Requests.findOne({
+                    where: {
+                        id: requestId,
+                        requestStatusId: 1,
+                        eventId: event.id
+                    }
+                })
+                if (request) {
+                    await Invites.destroy({
+                        where: {
+                            userId: userId,
+                            eventId: event.id,
+                            requestId: requestId,
+                            capitanId: request.capitanId
+                        }
+                    })
+
+                    await Requests.update({
+                        quantity: request.quantity - 1
+                    }, {
+                        where: {
+                            id: requestId,
+                            eventId: event.id,
+                        }
+                    })
+                    res.status(200).json({success: 'Успешный выход из заявки!'})
+                } else {
+                    res.status(400).json({error: 'Не получилось выйти из заявки, т.к. заявка была отпралена'})
+                }
+            } else {
+                res.status(400).json({error: 'Не получилось выйти из заявки, т.к. прием заявок завершен'})
+            }
+        } catch (e) {
+            res.status(500).json({error: 'Ошибка сервера'})
+        }
+    }
+
+    async outCapitanRequest (req, res) {
+        try {
+            const capitanId = req.user.user_id
+            const requestId = req.body.requestId
+            const event = await Events.findOne({
+                where: {
+                    eventStatusId: 1
+                }
+            })
+            if (event) {
+                const request = await Requests.findOne({
+                    where: {
+                        id: requestId,
+                        requestStatusId: {
+                          [Op.ne]: 3
+                        },
+                        eventId: event.id,
+                        capitanId: capitanId
+                    }
+                })
+                if (request) {
+                    await Requests.destroy({
+                        where: {
+                            id: requestId,
+                            eventId: event.id
+                        }
+                    })
+
+                    await Invites.destroy({
+                        where: {
+                            requestId: requestId,
+                            eventId: event.id
+                        }
+                    })
+                    res.status(200).json({success: 'Заявка успешно удалена!'})
+                } else {
+                    res.status(400).json({error: 'Не получилось удалить заявку, т.к. заявка была отпралена'})
+                }
+            } else {
+                res.status(400).json({error: 'Не получилось удалить заявку, т.к. прием заявок завершен'})
             }
         } catch (e) {
             res.status(500).json({error: 'Ошибка сервера'})
